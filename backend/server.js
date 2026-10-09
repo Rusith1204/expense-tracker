@@ -1,9 +1,22 @@
 const express = require("express"); // Express tool එක ගන්න
+const mongoose = require("mongoose");
+require("dotenv").config();
 const app = express();        // ඒකෙන් අපේ backend app එක හදන්න
 
 // Incoming JSON data read කරන්න
 app.use(express.json());            
 const PORT = 5000;
+
+const dns = require("dns");
+dns.setServers(["8.8.8.8"]);
+
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => {
+        console.log("MongoDB connected successfully!");
+    })
+    .catch((error) => {
+        console.log("MongoDB connection failed:", error.message);
+    });
 
 
 app.get("/", (req, res) => {
