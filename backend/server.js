@@ -96,6 +96,38 @@ app.get("/api/transactions", async (req, res) => {
     }
 });
 
+app.get("/api/transactions/:id", async (req, res) => {
+    try {
+        const id = req.params.id;
+
+        if (!mongoose.isValidObjectId(id)) {
+    return res.status(400).json({
+        message: "Invalid transaction ID"
+    });
+}
+
+        const transaction = await Transaction.findById(id);
+
+        if (!transaction) {
+            return res.status(404).json({
+                message: "Transaction not found"
+            });
+        }
+
+        res.status(200).json({
+            message: "Transaction retrieved successfully",
+            data: transaction
+        });
+
+    } catch (error) {
+        console.error("Failed to retrieve transaction:", error.message);
+
+        res.status(500).json({
+            message: "Failed to retrieve transaction"
+        });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
