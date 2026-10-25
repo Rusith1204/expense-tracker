@@ -2,6 +2,7 @@ const express = require("express"); // Express tool එක ගන්න
 const mongoose = require("mongoose");
 require("dotenv").config();
 const app = express();        // ඒකෙන් අපේ backend app එක හදන්න
+const Transaction = require("./models/Transaction");
 
 // Incoming JSON data read කරන්න
 app.use(express.json());            
@@ -23,7 +24,7 @@ app.get("/", (req, res) => {
     res.send("Expense Tracker Backend is running successfully!");
 });
 
-app.post("/api/transactions", (req, res) => {
+app.post("/api/transactions", async (req, res) => {
     const { type, amount, category, description } = req.body;
 
     // Validate transaction type
@@ -54,10 +55,28 @@ app.post("/api/transactions", (req, res) => {
         });
     }
 
-    res.status(200).json({
-        message: "Transaction validated successfully",
-        data: { type, amount, category, description }
+    try {
+    const transaction = new Transaction({
+        type,
+        amount,
+        category,
+        description
     });
+
+    await transaction.save();
+
+    res.status(201).json({
+        message: "Transaction saved successfully",
+        data: transaction
+    });
+
+} catch (error) {
+    console.error("Transaction save failed:", error.message);
+
+    res.status(500).json({
+        message: "Failed to save transaction"
+    });
+}
 });
 
 app.listen(PORT, () => {
