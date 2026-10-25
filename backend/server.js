@@ -78,6 +78,23 @@ app.post("/api/transactions", async (req, res) => {
     });
 }
 });
+app.get("/api/transactions", async (req, res) => {
+    try {
+        const transactions = await Transaction.find();
+
+        res.status(200).json({
+            message: "Transactions retrieved successfully",
+            data: transactions
+        });
+
+    } catch (error) {
+        console.error("Failed to retrieve transactions:", error.message);
+
+        res.status(500).json({
+            message: "Failed to retrieve transactions"
+        });
+    }
+});
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
