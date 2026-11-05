@@ -9,7 +9,8 @@ app.use(express.json());
 const PORT = 5000;
 
 const dns = require("dns");
-dns.setServers(["8.8.8.8"]);
+dns.setDefaultResultOrder("ipv4first");
+dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
 mongoose.connect(process.env.MONGO_URI)
     .then(() => {
