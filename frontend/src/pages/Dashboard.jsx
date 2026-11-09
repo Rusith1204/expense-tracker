@@ -1,8 +1,5 @@
-import {
-  Bell,
-  CalendarDays,
-  Search,
-} from "lucide-react";
+import { useEffect, useState } from "react";
+import { Bell, CalendarDays, Search } from "lucide-react";
 
 import Sidebar from "../components/Sidebar";
 import SummaryCard from "../components/SummaryCard";
@@ -10,7 +7,41 @@ import ExpenseChart from "../components/ExpenseChart";
 import CategoryChart from "../components/CategoryChart";
 import TransactionTable from "../components/TransactionTable";
 
+import { getTransactions } from "../services/transactionService";
+
 function Dashboard() {
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const data = await getTransactions();
+        setTransactions(data);
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTransactions();
+  }, []);
+
+  const totalIncome = transactions
+  .filter((transaction) => transaction.type === "income")
+  .reduce((total, transaction) => total + Number(transaction.amount), 0);
+
+const totalExpenses = transactions
+  .filter((transaction) => transaction.type === "expense")
+  .reduce((total, transaction) => total + Number(transaction.amount), 0);
+
+const totalBalance = totalIncome - totalExpenses;
+
+const formatCurrency = (amount) =>
+  `Rs. ${amount.toLocaleString("en-US")}`;
+
   return (
     <div className="flex min-h-screen bg-[#090e1a] text-white">
       <div className="hidden md:block">
@@ -21,11 +52,9 @@ function Dashboard() {
         <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-sm text-slate-400">Welcome back!</p>
-
             <h1 className="mt-1 text-2xl font-bold text-white md:text-3xl">
               Dashboard
             </h1>
-
             <p className="mt-2 text-sm text-slate-500">
               Here's what's happening with your finances.
             </p>
@@ -59,26 +88,28 @@ function Dashboard() {
         </div>
 
         <section className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          <SummaryCard
-            title="Total Balance"
-            amount="Rs. 65,000"
-            change="+12.5%"
-            type="balance"
-          />
+          <section className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+  <SummaryCard
+    title="Total Balance"
+    amount={formatCurrency(totalBalance)}
+    change="Live data"
+    type="balance"
+  />
 
-          <SummaryCard
-            title="Total Income"
-            amount="Rs. 100,000"
-            change="+8.2%"
-            type="income"
-          />
+  <SummaryCard
+    title="Total Income"
+    amount={formatCurrency(totalIncome)}
+    change="Live data"
+    type="income"
+  />
 
-          <SummaryCard
-            title="Total Expenses"
-            amount="Rs. 35,000"
-            change="-3.4%"
-            type="expense"
-          />
+  <SummaryCard
+    title="Total Expenses"
+    amount={formatCurrency(totalExpenses)}
+    change="Live data"
+    type="expense"
+  />
+</section>
         </section>
 
         <section className="mb-8 grid grid-cols-1 gap-5 xl:grid-cols-3">
@@ -90,7 +121,17 @@ function Dashboard() {
         </section>
 
         <section>
-          <TransactionTable />
+          {loading ? (
+            <div className="rounded-2xl border border-slate-800 bg-[#111b2d] p-8 text-center text-slate-400">
+              Loading transactions...
+            </div>
+          ) : error ? (
+            <div className="rounded-2xl border border-rose-500/30 bg-[#111b2d] p-8 text-center text-rose-400">
+              {error}
+            </div>
+          ) : (
+            <TransactionTable transactions={transactions} />
+          )}
         </section>
 
         <footer className="mt-8 border-t border-slate-800 pt-5 text-center text-xs text-slate-600">

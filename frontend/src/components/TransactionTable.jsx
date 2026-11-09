@@ -4,69 +4,44 @@ import {
   ShoppingBag,
   House,
   CircleDollarSign,
+  Receipt,
 } from "lucide-react";
 
-const transactions = [
-  {
-    id: 1,
-    title: "Grocery Shopping",
-    category: "Food",
-    date: "Nov 06, 2026",
-    amount: "- Rs. 5,500",
-    type: "expense",
-    icon: ShoppingBag,
-  },
-  {
-    id: 2,
-    title: "Monthly Salary",
-    category: "Salary",
-    date: "Nov 05, 2026",
-    amount: "+ Rs. 100,000",
-    type: "income",
-    icon: CircleDollarSign,
-  },
-  {
-    id: 3,
-    title: "Lunch",
-    category: "Food",
-    date: "Nov 04, 2026",
-    amount: "- Rs. 1,200",
-    type: "expense",
-    icon: Utensils,
-  },
-  {
-    id: 4,
-    title: "Bus & Taxi",
-    category: "Transport",
-    date: "Nov 03, 2026",
-    amount: "- Rs. 2,000",
-    type: "expense",
-    icon: Car,
-  },
-  {
-    id: 5,
-    title: "Monthly Rent",
-    category: "Housing",
-    date: "Nov 02, 2026",
-    amount: "- Rs. 15,000",
-    type: "expense",
-    icon: House,
-  },
-];
+function TransactionTable({ transactions }) {
+  const getIcon = (category) => {
+    const icons = {
+      Food: Utensils,
+      Transport: Car,
+      Shopping: ShoppingBag,
+      Housing: House,
+      Salary: CircleDollarSign,
+    };
 
-function TransactionTable() {
+    return icons[category] || Receipt;
+  };
+
+  const formatDate = (date) => {
+    return new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+    });
+  };
+
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-800 bg-[#111b2d]">
       <div className="flex items-center justify-between p-5">
         <div>
-          <h3 className="font-semibold text-white">Recent Transactions</h3>
+          <h3 className="font-semibold text-white">
+            Recent Transactions
+          </h3>
           <p className="mt-1 text-xs text-slate-500">
             Your latest financial activities
           </p>
         </div>
 
         <span className="text-xs font-medium text-indigo-400">
-          Latest 5
+          Latest {transactions.length}
         </span>
       </div>
 
@@ -83,10 +58,13 @@ function TransactionTable() {
 
           <tbody className="divide-y divide-slate-800">
             {transactions.map((transaction) => {
-              const Icon = transaction.icon;
+              const Icon = getIcon(transaction.category);
 
               return (
-                <tr key={transaction.id} className="transition hover:bg-slate-800/30">
+                <tr
+                  key={transaction._id}
+                  className="transition hover:bg-slate-800/30"
+                >
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">
                       <div className="rounded-lg bg-slate-800 p-2">
@@ -94,7 +72,7 @@ function TransactionTable() {
                       </div>
 
                       <span className="text-sm font-medium text-white">
-                        {transaction.title}
+                        {transaction.description || transaction.category}
                       </span>
                     </div>
                   </td>
@@ -104,21 +82,33 @@ function TransactionTable() {
                   </td>
 
                   <td className="px-5 py-4 text-sm text-slate-400">
-                    {transaction.date}
+                    {formatDate(transaction.date)}
                   </td>
 
                   <td
                     className={`px-5 py-4 text-right text-sm font-semibold ${
                       transaction.type === "income"
                         ? "text-emerald-400"
-                        : "text-white"
+                        : "text-rose-400"
                     }`}
                   >
-                    {transaction.amount}
+                    {transaction.type === "income" ? "+" : "-"} Rs.{" "}
+                    {Number(transaction.amount).toLocaleString("en-US")}
                   </td>
                 </tr>
               );
             })}
+
+            {transactions.length === 0 && (
+              <tr>
+                <td
+                  colSpan="4"
+                  className="px-5 py-8 text-center text-sm text-slate-500"
+                >
+                  No transactions found.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
